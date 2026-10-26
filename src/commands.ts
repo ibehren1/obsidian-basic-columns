@@ -1,4 +1,4 @@
-import { Editor, Plugin } from 'obsidian';
+import { Editor, Menu, Notice, Plugin } from 'obsidian';
 import { EditorView } from '@codemirror/view';
 import {
 	createColumnBlock,
@@ -63,12 +63,16 @@ function removeColumnsAtCursor(editor: Editor, checking: boolean): boolean {
 	return true;
 }
 
+const COLUMN_COUNTS = [2, 3, 4];
+
+const columnsIcon = (count: number) => `columns-${count}`;
+
 export function registerCommands(plugin: Plugin) {
-	for (const count of [2, 3]) {
+	for (const count of COLUMN_COUNTS) {
 		plugin.addCommand({
 			id: `insert-${count}-columns`,
 			name: `Insert ${count} columns`,
-			icon: count === 2 ? 'columns-2' : 'columns-3',
+			icon: columnsIcon(count),
 			editorCallback: (editor) => insertColumns(editor, count),
 		});
 	}
@@ -79,13 +83,31 @@ export function registerCommands(plugin: Plugin) {
 			removeColumnsAtCursor(editor, checking),
 	});
 
+	plugin.addRibbonIcon('columns-3', 'Insert columns', (evt) => {
+		const editor = plugin.app.workspace.activeEditor?.editor;
+		if (!editor) {
+			new Notice('Open a note to insert columns.');
+			return;
+		}
+		const menu = new Menu();
+		for (const count of COLUMN_COUNTS) {
+			menu.addItem((item) =>
+				item
+					.setTitle(`${count} columns`)
+					.setIcon(columnsIcon(count))
+					.onClick(() => insertColumns(editor, count)),
+			);
+		}
+		menu.showAtMouseEvent(evt);
+	});
+
 	plugin.registerEvent(
 		plugin.app.workspace.on('editor-menu', (menu, editor) => {
-			for (const count of [2, 3]) {
+			for (const count of COLUMN_COUNTS) {
 				menu.addItem((item) =>
 					item
 						.setTitle(`Insert ${count} columns`)
-						.setIcon(count === 2 ? 'columns-2' : 'columns-3')
+						.setIcon(columnsIcon(count))
 						.setSection('insert')
 						.onClick(() => insertColumns(editor, count)),
 				);
