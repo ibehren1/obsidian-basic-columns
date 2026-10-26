@@ -5,7 +5,7 @@ export function applyWidths(columnEls: HTMLElement[], widths: number[] | null) {
 	const normalized = normalizeWidths(widths, columnEls.length);
 	// Grow factors rather than percentages so gaps and dividers never overflow.
 	columnEls.forEach((col, i) => {
-		col.style.flexGrow = normalized ? String(normalized[i]) : '';
+		col.setCssProps({ '--bc-grow': normalized ? String(normalized[i]) : '' });
 	});
 }
 

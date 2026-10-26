@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-basic-columns",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "Basic Columns plugin for Obsidian (https://obsidian.md)",
 	"main": "main.js",
 	"type": "module",

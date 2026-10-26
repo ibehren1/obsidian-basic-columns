@@ -7,7 +7,8 @@
 }
 
 .bc-column {
-	flex: 1 1 0;
+	/* --bc-grow is set from the widths stored in the file. */
+	flex: var(--bc-grow, 1) 1 0;
 	min-width: 0;
 }
 
@@ -45,10 +46,7 @@
 
 /* Live Preview widget */
 
-.markdown-source-view.mod-cm6 .cm-content > .bc-columns-widget[contenteditable],
 .bc-columns-widget {
-	/* Obsidian paint-contains widgets (with !important), which clips the toolbar. */
-	contain: none !important;
 	position: relative;
 	container-type: inline-size;
 	padding: var(--size-4-1) 0;
@@ -134,8 +132,9 @@
 /* Toolbar */
 
 .bc-toolbar {
+	/* Inside the widget's box: Obsidian clips widgets to their bounds. */
 	position: absolute;
-	top: calc(-1 * var(--size-4-6));
+	top: 0;
 	right: 0;
 	display: flex;
 	gap: var(--size-2-1);
@@ -169,7 +168,7 @@
 	}
 
 	.bc-column {
-		flex-grow: 1 !important;
+		flex-grow: 1;
 	}
 
 	.callout.bc-columns-callout .bc-column + .bc-column,
