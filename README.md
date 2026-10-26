@@ -16,7 +16,7 @@ Click into a column and type.
 ## Why Basic Columns
 
 - **Type right inside the columns.** In Live Preview each column is a real
-  Obsidian editor. Lists, checkboxes, headings, `[[links]]` with suggestions,
+  Obsidian editor. Lists, checkboxes, headings, callouts, `[[links]]` with suggestions,
   and tags all work as they do anywhere else in your note.
 
   ![Typing a link inside a column shows the usual link suggestions](https://raw.githubusercontent.com/ibehren1/obsidian-basic-columns/main/docs/images/link-suggestions.png)
