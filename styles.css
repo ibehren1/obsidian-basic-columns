@@ -49,7 +49,10 @@
 .bc-columns-widget {
 	position: relative;
 	container-type: inline-size;
-	padding: var(--size-4-1) 0;
+	/* Obsidian clips widgets to their box. Widen it by 1px each side (content
+	   stays aligned) so borders on the edge, like a callout's, aren't cut off. */
+	margin: 0 -1px;
+	padding: var(--size-4-1) 1px;
 }
 
 .bc-columns-widget .bc-columns {

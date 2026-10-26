@@ -67,6 +67,38 @@ describe('findColumnBlocks', () => {
 		expect(serializeColumnBlock(block)).toBe(doc);
 	});
 
+	it('keeps callouts at the start, middle, and end of columns', () => {
+		const doc = [
+			'> [!columns]',
+			'> > [!tip] Why',
+			'> > Cheap.',
+			'>',
+			'> - step',
+			'>',
+			'> > [!column-break]',
+			'>',
+			'> > [!warning]- Risks',
+			'> > Needs sign-off.',
+			'>',
+			'> > [!note]',
+			'> > Deeper:',
+			'> > > [!quote]',
+			'> > > A quote.',
+		].join('\n');
+		const block = findColumnBlocks(lines(doc))[0]!;
+		expect(block.columns).toEqual([
+			'> [!tip] Why\n> Cheap.\n\n- step',
+			'> [!warning]- Risks\n> Needs sign-off.\n\n> [!note]\n> Deeper:\n> > [!quote]\n> > A quote.',
+		]);
+		expect(serializeColumnBlock(block)).toBe(doc);
+	});
+
+	it('does not split on a column-break nested inside another callout', () => {
+		const doc = '> [!columns]\n> > [!note]\n> > > [!column-break]\n> > text';
+		const block = findColumnBlocks(lines(doc))[0]!;
+		expect(block.columns).toEqual(['> [!note]\n> > [!column-break]\n> text']);
+	});
+
 	it('handles empty columns', () => {
 		const doc = createColumnBlock(3);
 		const block = findColumnBlocks(lines(doc))[0]!;
