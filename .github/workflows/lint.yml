@@ -17,11 +17,20 @@ jobs:
 
         steps:
             - uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v6
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: 'npm'
+            - name: Check every commit bumps the version
+              run: |
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    node scripts/check-version-bumps.mjs "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+                  else
+                    node scripts/check-version-bumps.mjs "${{ github.event.before }}" "${{ github.sha }}"
+                  fi
             - run: npm ci
             - run: npm run build --if-present
             - run: npm run lint

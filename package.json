@@ -1,15 +1,15 @@
 {
 	"name": "obsidian-basic-columns",
-	"version": "0.1.0",
+	"version": "0.1.2",
 	"description": "Basic Columns plugin for Obsidian (https://obsidian.md)",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint .",
-		"test": "vitest run"
+		"test": "vitest run",
+		"prepare": "git config core.hooksPath .githooks"
 	},
 	"keywords": [],
 	"license": "0-BSD",
