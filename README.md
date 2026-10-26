@@ -58,8 +58,13 @@ isn't part of the public API. That code lives in `src/embedded-editor.ts`. If
 a future Obsidian release breaks it, the plugin falls back to a plain text
 editor inside columns.
 
-## Releasing
+## Versioning and releases
 
-Update `minAppVersion` in `manifest.json` if needed, then run
-`npm version patch|minor|major` to bump `manifest.json`, `package.json`, and
-`versions.json`. Push the tag; the GitHub release workflow builds the assets.
+Every commit bumps the patch version (`x.y.z` to `x.y.z+1`). A pre-commit hook
+(`.githooks/pre-commit`, enabled by `npm install`) updates `manifest.json`,
+`package.json`, `package-lock.json`, and `versions.json`. To bump `x` or `y`,
+edit the version in `manifest.json` by hand before committing; the hook leaves
+it alone when it's already newer than the last commit's.
+
+CI rejects commits that don't increase the version. Every push to `main`
+publishes a GitHub release with `main.js`, `manifest.json`, and `styles.css`.

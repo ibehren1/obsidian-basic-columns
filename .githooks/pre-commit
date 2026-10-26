@@ -1,0 +1,5 @@
+#!/bin/sh
+# Every commit bumps the patch version. See scripts/bump-patch.mjs.
+set -e
+node scripts/bump-patch.mjs
+git add manifest.json package.json package-lock.json versions.json

@@ -1,12 +1,17 @@
 name: Release Obsidian plugin
 
+# Every commit bumps the patch version (see .githooks/pre-commit), so each
+# push to main publishes the version in manifest.json as a new release.
 on:
     push:
-        tags:
-            - '*'
+        branches: [main]
+
+concurrency:
+    group: release
+    cancel-in-progress: false
 
 jobs:
-    build:
+    release:
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -14,6 +19,8 @@ jobs:
             attestations: write
         steps:
             - uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
 
             - name: Use Node.js
               uses: actions/setup-node@v6
@@ -21,30 +28,40 @@ jobs:
                   node-version: 24
                   cache: 'npm'
 
-            - name: Build plugin
+            - name: Check version bumps
+              run: node scripts/check-version-bumps.mjs "${{ github.event.before }}" "${{ github.sha }}"
+
+            - name: Build and test
               run: |
                   npm ci
+                  npm run lint
+                  npm test
                   npm run build
 
-            - name: Check for optional styles
-              id: styles
+            - name: Read version
+              id: version
               run: |
-                  [ -f styles.css ] && echo "exists=true" >> "$GITHUB_OUTPUT" || echo "exists=false" >> "$GITHUB_OUTPUT"
+                  version="$(node -p "require('./manifest.json').version")"
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
+                  if git ls-remote --exit-code --tags origin "refs/tags/$version" > /dev/null; then
+                    echo "::error::Tag $version already exists; bump the version."
+                    exit 1
+                  fi
 
             - name: Attest build provenance
               uses: actions/attest@v4
               with:
                   subject-path: |
                       main.js
-                      ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
+                      styles.css
 
-            - name: Create release
+            - name: Publish release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  tag="${GITHUB_REF#refs/tags/}"
-
-                  gh release create "$tag" \
-                    --title="$tag" \
-                    --draft \
-                    main.js manifest.json ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
+                  version="${{ steps.version.outputs.version }}"
+                  gh release create "$version" \
+                    --title="$version" \
+                    --target="$GITHUB_SHA" \
+                    --generate-notes \
+                    main.js manifest.json styles.css
