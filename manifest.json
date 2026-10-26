@@ -1,7 +1,7 @@
 {
 	"id": "basic-columns",
 	"name": "Basic Columns",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"minAppVersion": "1.0.0",
 	"description": "Word-style column sections: switch part of a note to 2 or 3 columns and type directly inside them.",
 	"author": "TODO",
