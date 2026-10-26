@@ -3,7 +3,7 @@
 	"name": "Basic Columns",
 	"version": "0.1.0",
 	"minAppVersion": "1.0.0",
-	"description": "TODO: describe plugin.",
+	"description": "Word-style column sections: switch part of a note to 2 or 3 columns and type directly inside them.",
 	"author": "TODO",
 	"authorUrl": "",
 	"isDesktopOnly": false

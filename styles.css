@@ -1,8 +1,196 @@
-/*
+/* Shared column layout (Reading mode and Live Preview) */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.bc-columns {
+	display: flex;
+	gap: var(--size-4-4);
+	align-items: stretch;
+}
 
-If your plugin does not need CSS, delete this file.
+.bc-column {
+	flex: 1 1 0;
+	min-width: 0;
+}
 
-*/
+.bc-column > :first-child {
+	margin-top: 0;
+}
+
+.bc-column > :last-child {
+	margin-bottom: 0;
+}
+
+/* Reading mode: drop the callout chrome so columns read as part of the note */
+
+.callout.bc-columns-callout {
+	background: none;
+	border: none;
+	padding: 0;
+	margin: var(--p-spacing) 0;
+	mix-blend-mode: normal;
+	container-type: inline-size;
+}
+
+.callout.bc-columns-callout > .callout-title {
+	display: none;
+}
+
+.callout.bc-columns-callout > .callout-content {
+	padding: 0;
+}
+
+.callout.bc-columns-callout .bc-column + .bc-column {
+	border-left: 1px solid var(--background-modifier-border);
+	padding-left: var(--size-4-4);
+}
+
+/* Live Preview widget */
+
+.markdown-source-view.mod-cm6 .cm-content > .bc-columns-widget[contenteditable],
+.bc-columns-widget {
+	/* Obsidian paint-contains widgets (with !important), which clips the toolbar. */
+	contain: none !important;
+	position: relative;
+	container-type: inline-size;
+	padding: var(--size-4-1) 0;
+}
+
+.bc-columns-widget .bc-columns {
+	gap: 0;
+}
+
+.bc-columns-widget .bc-column {
+	border-radius: var(--radius-s);
+}
+
+/* The divider doubles as the gap, so every column gets the same width. */
+.bc-divider {
+	flex: 0 0 calc(var(--size-4-4) + 1px);
+	cursor: col-resize;
+	position: relative;
+	z-index: 1;
+	touch-action: none;
+}
+
+.bc-divider::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	width: 1px;
+	background: var(--background-modifier-border);
+}
+
+.bc-divider:hover::after,
+.bc-divider.is-dragging::after {
+	width: 3px;
+	margin-left: -1px;
+	background: var(--interactive-accent);
+}
+
+/* Embedded editors: blend into the note instead of looking like a nested editor */
+
+.bc-column .markdown-source-view,
+.bc-column .cm-editor {
+	height: auto;
+	background: transparent;
+}
+
+.bc-column .cm-scroller {
+	padding: 0;
+	overflow: visible;
+}
+
+.bc-column .cm-sizer,
+.bc-column .markdown-source-view.mod-cm6 .cm-sizer {
+	max-width: none;
+	min-height: 0;
+	padding: 0;
+	margin: 0;
+}
+
+.bc-column .cm-content {
+	padding: 0;
+	min-height: 1.5em;
+}
+
+.bc-column .cm-contentContainer,
+.bc-column .markdown-source-view.mod-cm6 .cm-contentContainer {
+	padding: 0;
+}
+
+.bc-column .markdown-source-view.mod-cm6 .cm-fold-indicator,
+.bc-column .cm-editor .cm-gutters,
+.bc-column .inline-title,
+.bc-column .embedded-backlinks,
+.bc-column .metadata-container {
+	display: none;
+}
+
+.bc-column .cm-editor.cm-focused {
+	outline: none;
+}
+
+/* Toolbar */
+
+.bc-toolbar {
+	position: absolute;
+	top: calc(-1 * var(--size-4-6));
+	right: 0;
+	display: flex;
+	gap: var(--size-2-1);
+	padding: var(--size-2-1);
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 120ms ease-in-out;
+	z-index: 2;
+}
+
+.bc-columns-widget:hover .bc-toolbar,
+.bc-columns-widget:focus-within .bc-toolbar {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.bc-toolbar-button.is-disabled {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+/* Narrow panes and phones: stack columns */
+
+@container (max-width: 480px) {
+	.bc-columns {
+		flex-direction: column;
+		gap: var(--size-4-3);
+	}
+
+	.bc-column {
+		flex-grow: 1 !important;
+	}
+
+	.callout.bc-columns-callout .bc-column + .bc-column,
+	.bc-columns-widget .bc-divider + .bc-column {
+		border-left: none;
+		padding-left: 0;
+		border-top: 1px solid var(--background-modifier-border);
+		padding-top: var(--size-4-3);
+	}
+
+	.bc-columns-widget .bc-column {
+		padding: 0;
+	}
+
+	.bc-divider {
+		display: none;
+	}
+}
+
+@media print {
+	.bc-toolbar {
+		display: none;
+	}
+}
