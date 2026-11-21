@@ -140,11 +140,7 @@
 	top: 0;
 	right: 0;
 	display: flex;
-	gap: var(--size-2-1);
-	padding: var(--size-2-1);
-	background: var(--background-primary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-s);
+	gap: 0;
 	opacity: 0;
 	pointer-events: none;
 	transition: opacity 120ms ease-in-out;
@@ -157,8 +153,38 @@
 	pointer-events: auto;
 }
 
-.bc-toolbar-button.is-disabled {
-	opacity: 0.4;
+/* Bare icons in the theme's icon color, faded until you point at one.
+   :not(#bc-none) matches every button but counts as an id, so these rules
+   outrank themes that give every button a box, without !important. */
+.bc-toolbar-button:not(#bc-none) {
+	--icon-size: var(--icon-xs);
+	--icon-stroke: var(--icon-xs-stroke-width);
+	padding: var(--size-2-1);
+	color: var(--icon-color);
+	opacity: calc(var(--icon-opacity) * 0.6);
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+.bc-toolbar-button:not(#bc-none):hover,
+.bc-toolbar-button:not(#bc-none):active {
+	color: var(--icon-color-hover);
+	opacity: var(--icon-opacity-hover);
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+/* Keep buttons big enough to tap on phones. */
+.is-mobile .bc-toolbar-button:not(#bc-none) {
+	--icon-size: var(--icon-s);
+	--icon-stroke: var(--icon-s-stroke-width);
+	padding: var(--size-2-2);
+}
+
+.bc-toolbar-button.is-disabled:not(#bc-none) {
+	opacity: calc(var(--icon-opacity) * 0.25);
 	pointer-events: none;
 }
 
