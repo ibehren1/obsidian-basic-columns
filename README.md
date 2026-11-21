@@ -77,6 +77,13 @@ Escape, or click below the section.
 
 Assign hotkeys to any of these in **Settings → Hotkeys**.
 
+## Settings
+
+Find these in **Settings → Basic Columns**.
+
+- **Divider opacity**: how visible the line between columns is, from 0% (hidden)
+  to 100% (your theme's border color, the default).
+
 ## What it looks like in markdown
 
 You never need to type this, but here's how a column section is saved:
