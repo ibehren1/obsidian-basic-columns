@@ -28,7 +28,7 @@ Click into a column and type.
 - **Your links still count.** Links and tags inside columns show up in
   backlinks, search, and the graph, and they update when you rename a note.
 - **Resize by dragging.** Drag the line between two columns to make one wider.
-  Double-click it to make them equal again.
+  Double-click it to make them equal again. You can turn this off in settings.
 - **Change your mind easily.** Hover a column section to add a column, remove
   one (nothing is deleted; its text moves into the column beside it), or turn
   the section back into normal text.
@@ -76,6 +76,15 @@ Escape, or click below the section.
 - Remove columns (keep content)
 
 Assign hotkeys to any of these in **Settings → Hotkeys**.
+
+## Settings
+
+Find these in **Settings → Basic Columns**.
+
+- **Divider opacity**: how visible the line between columns is, from 0% (hidden)
+  to 100% (your theme's border color, the default).
+- **Drag dividers to resize**: on by default. Turn it off and the line between
+  columns no longer highlights on hover, drags, or resets on double-click.
 
 ## What it looks like in markdown
 

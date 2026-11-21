@@ -40,6 +40,13 @@ import { applyWidths } from './reading';
 
 type BlockData = Pick<ColumnBlock, 'widths' | 'title' | 'columns'>;
 
+/** Plugin settings the editor reads when the user acts, so changes apply right away. */
+export interface ColumnsOptions {
+	resizable: () => boolean;
+}
+
+export const DIVIDER_LABEL = 'Drag to resize, double-click to reset';
+
 interface Range {
 	from: number;
 	to: number;
@@ -73,7 +80,7 @@ interface FieldValue {
 const controllers = new WeakMap<HTMLElement, ColumnsController>();
 const viewControllers = new WeakMap<EditorView, Set<ColumnsController>>();
 
-function buildField(app: App): StateField<FieldValue> {
+function buildField(app: App, options: ColumnsOptions): StateField<FieldValue> {
 	function build(state: EditorState, source: number[]): FieldValue {
 		const livePreview = state.field(editorLivePreviewField, false) ?? false;
 		const builder = new RangeSetBuilder<Decoration>();
@@ -93,7 +100,7 @@ function buildField(app: App): StateField<FieldValue> {
 					range.to,
 					Decoration.replace({
 						block: true,
-						widget: new ColumnsWidget(app, range.block),
+						widget: new ColumnsWidget(app, range.block, options),
 					}),
 				);
 			}
@@ -145,6 +152,7 @@ class ColumnsWidget extends WidgetType {
 	constructor(
 		readonly app: App,
 		readonly block: ColumnBlock,
+		readonly options: ColumnsOptions,
 	) {
 		super();
 		this.key = serializeColumnBlock(block);
@@ -155,7 +163,7 @@ class ColumnsWidget extends WidgetType {
 	}
 
 	toDOM(view: EditorView): HTMLElement {
-		return new ColumnsController(this.app, view, this.block).dom;
+		return new ColumnsController(this.app, view, this.block, this.options).dom;
 	}
 
 	updateDOM(dom: HTMLElement): boolean {
@@ -188,6 +196,7 @@ class ColumnsController {
 		private app: App,
 		private view: EditorView,
 		block: ColumnBlock,
+		private options: ColumnsOptions,
 	) {
 		this.data = cloneData(block);
 		this.dom = createDiv({ cls: 'bc-columns-widget' });
@@ -300,11 +309,13 @@ class ColumnsController {
 
 	private buildDivider(index: number) {
 		const divider = this.columnsEl.createDiv({ cls: 'bc-divider' });
-		divider.setAttr('aria-label', 'Drag to resize, double-click to reset');
+		if (this.options.resizable()) divider.setAttr('aria-label', DIVIDER_LABEL);
 		divider.addEventListener('dblclick', () => {
+			if (!this.options.resizable()) return;
 			this.commit({ ...this.data, widths: null });
 		});
 		divider.addEventListener('pointerdown', (down) => {
+			if (!this.options.resizable()) return;
 			down.preventDefault();
 			divider.setPointerCapture(down.pointerId);
 			divider.addClass('is-dragging');
@@ -556,9 +567,9 @@ const keepSeparator = EditorState.transactionFilter.of((tr) => {
 	];
 });
 
-export function columnsEditorExtension(app: App): Extension {
+export function columnsEditorExtension(app: App, options: ColumnsOptions): Extension {
 	return [
-		Prec.highest(buildField(app)),
+		Prec.highest(buildField(app, options)),
 		keepSeparator,
 		Prec.high(keymap.of(enterKeys())),
 	];
