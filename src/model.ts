@@ -134,6 +134,28 @@ export function findBlockAt(
 	);
 }
 
+/**
+ * The block you reach by moving up or down from `line`, passing only blank
+ * lines on the way. Blank lines around a block keep text out of the callout,
+ * so the cursor steps over them.
+ */
+export function blockBeside(
+	lines: string[],
+	line: number,
+	direction: 'up' | 'down',
+): ColumnBlock | null {
+	const step = direction === 'down' ? 1 : -1;
+	let next = line + step;
+	while (next >= 0 && next < lines.length && lines[next]!.trim() === '') {
+		next += step;
+	}
+	return (
+		findColumnBlocks(lines).find(
+			(b) => (direction === 'down' ? b.fromLine : b.toLine) === next,
+		) ?? null
+	);
+}
+
 function formatWidths(widths: number[] | null, count: number): string {
 	if (!widths || widths.length !== count) return '';
 	return '|' + widths.map((w) => Math.round(w)).join(' ');

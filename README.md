@@ -63,7 +63,8 @@ Escape, or click below the section.
 
 | Key | What it does |
 | --- | --- |
-| ← / → at the edge of a column | Move to the previous or next column |
+| ← / → at the edge of a column | Move to the previous or next column, or out of the section past the first or last one |
+| ↓ or → above a column section, ↑ or ← below it | Move into the columns |
 | ↑ on the first line / ↓ on the last line | Leave the column section |
 | Esc | Leave the column section |
 | Cmd/Ctrl + Z | Undo, for the whole note, inside or outside columns |

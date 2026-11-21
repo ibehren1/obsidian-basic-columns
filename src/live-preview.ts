@@ -27,6 +27,7 @@ import { ColumnEditor, createColumnEditor } from './embedded-editor';
 import {
 	ColumnBlock,
 	addColumn,
+	blockBeside,
 	findBlockAt,
 	findColumnBlocks,
 	minimalChange,
@@ -175,6 +176,11 @@ class ColumnsWidget extends WidgetType {
 }
 
 type Edge = 'start' | 'end';
+
+/** Leave arrow keys to Obsidian's popups ([[ links, tags, slash commands). */
+function suggestOpen(view: EditorView): boolean {
+	return view.dom.ownerDocument.querySelector('.suggestion-container') !== null;
+}
 
 class ColumnsController {
 	readonly dom: HTMLElement;
@@ -423,10 +429,6 @@ class ColumnsController {
 		const onLastLine = (v: EditorView) =>
 			v.state.doc.lineAt(v.state.selection.main.head).number ===
 			v.state.doc.lines;
-		// Leave arrow keys to Obsidian's popups ([[ links, tags, slash commands).
-		const suggestOpen = (v: EditorView) =>
-			v.dom.ownerDocument.querySelector('.suggestion-container') !== null;
-
 		// One undo history for the whole note, so Cmd+Z behaves the same
 		// inside and outside columns.
 		const parent = (command: (view: EditorView) => boolean) => () => {
@@ -457,16 +459,18 @@ class ColumnsController {
 			{
 				key: 'ArrowLeft',
 				run: (v) => {
-					if (index === 0 || !atStart(v)) return false;
-					this.focusColumn(index - 1, 'end');
+					if (!atStart(v)) return false;
+					if (index === 0) this.exit('up');
+					else this.focusColumn(index - 1, 'end');
 					return true;
 				},
 			},
 			{
 				key: 'ArrowRight',
 				run: (v) => {
-					if (index === count - 1 || !atEnd(v)) return false;
-					this.focusColumn(index + 1, 'start');
+					if (!atEnd(v)) return false;
+					if (index === count - 1) this.exit('down');
+					else this.focusColumn(index + 1, 'start');
 					return true;
 				},
 			},
@@ -510,20 +514,52 @@ export function focusColumnAt(
 function enterKeys(): KeyBinding[] {
 	const enter = (view: EditorView, direction: 'up' | 'down') => {
 		const sel = view.state.selection.main;
-		if (!sel.empty) return false;
+		if (!sel.empty || suggestOpen(view)) return false;
 		const doc = view.state.doc;
-		const line = doc.lineAt(sel.head).number - 1;
-		for (const range of blocksIn(doc)) {
-			if (direction === 'down' && range.block.fromLine === line + 1) {
-				return focusColumnAt(view, range.from, 0, 'start');
-			}
-			if (direction === 'up' && range.block.toLine === line - 1) {
-				return focusColumnAt(view, range.from, 0, 'end');
-			}
+		const current = doc.lineAt(sel.head);
+		// On a long wrapped line, move within it first.
+		const moved = view.moveVertically(sel, direction === 'down');
+		if (doc.lineAt(moved.head).number === current.number) return false;
+		const block = blockBeside(
+			doc.toString().split('\n'),
+			current.number - 1,
+			direction,
+		);
+		if (!block) return false;
+		return focusColumnAt(
+			view,
+			doc.line(block.fromLine + 1).from,
+			0,
+			direction === 'down' ? 'start' : 'end',
+		);
+	};
+	const enterSideways = (view: EditorView, direction: 'left' | 'right') => {
+		const sel = view.state.selection.main;
+		if (!sel.empty || suggestOpen(view)) return false;
+		const doc = view.state.doc;
+		const right = direction === 'right';
+		const line = doc.lineAt(sel.head);
+		// The cursor can also rest right before or after a block, where it
+		// can't be seen.
+		let block = blocksIn(doc).find((r) => sel.head === (right ? r.from : r.to))?.block;
+		if (!block && sel.head === (right ? line.to : line.from)) {
+			block = blockBeside(
+				doc.toString().split('\n'),
+				line.number - 1,
+				right ? 'down' : 'up',
+			) ?? undefined;
 		}
-		return false;
+		if (!block) return false;
+		return focusColumnAt(
+			view,
+			doc.line(block.fromLine + 1).from,
+			right ? 0 : block.columns.length - 1,
+			right ? 'start' : 'end',
+		);
 	};
 	return [
+		{ key: 'ArrowRight', run: (v) => enterSideways(v, 'right') },
+		{ key: 'ArrowLeft', run: (v) => enterSideways(v, 'left') },
 		{ key: 'ArrowDown', run: (v) => enter(v, 'down') },
 		{ key: 'ArrowUp', run: (v) => enter(v, 'up') },
 	];
@@ -560,6 +596,8 @@ export function columnsEditorExtension(app: App): Extension {
 	return [
 		Prec.highest(buildField(app)),
 		keepSeparator,
-		Prec.high(keymap.of(enterKeys())),
+		// Highest, so this runs before Obsidian's own arrow handling, which
+		// would otherwise move the cursor past the block.
+		Prec.highest(keymap.of(enterKeys())),
 	];
 }

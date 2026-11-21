@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	addColumn,
+	blockBeside,
 	createColumnBlock,
 	findColumnBlocks,
 	minimalChange,
@@ -197,5 +198,20 @@ describe('minimalChange', () => {
 			to: 11,
 			insert: '',
 		});
+	});
+});
+
+describe('blockBeside', () => {
+	const doc = lines(DOC);
+
+	it('reaches the block from text above or below, past blank lines', () => {
+		expect(blockBeside(doc, 0, 'down')?.fromLine).toBe(2);
+		expect(blockBeside(doc, 13, 'up')?.fromLine).toBe(2);
+	});
+
+	it('ignores blocks behind text or in the other direction', () => {
+		expect(blockBeside(doc, 0, 'up')).toBeNull();
+		expect(blockBeside(doc, 13, 'down')).toBeNull();
+		expect(blockBeside(lines('a\nb\n\n' + DOC), 0, 'down')).toBeNull();
 	});
 });
