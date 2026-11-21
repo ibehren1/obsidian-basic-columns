@@ -459,16 +459,18 @@ class ColumnsController {
 			{
 				key: 'ArrowLeft',
 				run: (v) => {
-					if (index === 0 || !atStart(v)) return false;
-					this.focusColumn(index - 1, 'end');
+					if (!atStart(v)) return false;
+					if (index === 0) this.exit('up');
+					else this.focusColumn(index - 1, 'end');
 					return true;
 				},
 			},
 			{
 				key: 'ArrowRight',
 				run: (v) => {
-					if (index === count - 1 || !atEnd(v)) return false;
-					this.focusColumn(index + 1, 'start');
+					if (!atEnd(v)) return false;
+					if (index === count - 1) this.exit('down');
+					else this.focusColumn(index + 1, 'start');
 					return true;
 				},
 			},
@@ -531,7 +533,33 @@ function enterKeys(): KeyBinding[] {
 			direction === 'down' ? 'start' : 'end',
 		);
 	};
+	const enterSideways = (view: EditorView, direction: 'left' | 'right') => {
+		const sel = view.state.selection.main;
+		if (!sel.empty || suggestOpen(view)) return false;
+		const doc = view.state.doc;
+		const right = direction === 'right';
+		const line = doc.lineAt(sel.head);
+		// The cursor can also rest right before or after a block, where it
+		// can't be seen.
+		let block = blocksIn(doc).find((r) => sel.head === (right ? r.from : r.to))?.block;
+		if (!block && sel.head === (right ? line.to : line.from)) {
+			block = blockBeside(
+				doc.toString().split('\n'),
+				line.number - 1,
+				right ? 'down' : 'up',
+			) ?? undefined;
+		}
+		if (!block) return false;
+		return focusColumnAt(
+			view,
+			doc.line(block.fromLine + 1).from,
+			right ? 0 : block.columns.length - 1,
+			right ? 'start' : 'end',
+		);
+	};
 	return [
+		{ key: 'ArrowRight', run: (v) => enterSideways(v, 'right') },
+		{ key: 'ArrowLeft', run: (v) => enterSideways(v, 'left') },
 		{ key: 'ArrowDown', run: (v) => enter(v, 'down') },
 		{ key: 'ArrowUp', run: (v) => enter(v, 'up') },
 	];
