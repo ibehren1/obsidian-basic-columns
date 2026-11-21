@@ -4,6 +4,12 @@
 	display: flex;
 	gap: var(--size-4-4);
 	align-items: stretch;
+	/* --bc-divider-opacity comes from the plugin settings (0 to 1). */
+	--bc-divider-color: color-mix(
+		in srgb,
+		var(--background-modifier-border) calc(var(--bc-divider-opacity, 1) * 100%),
+		transparent
+	);
 }
 
 .bc-column {
@@ -40,7 +46,7 @@
 }
 
 .callout.bc-columns-callout .bc-column + .bc-column {
-	border-left: 1px solid var(--background-modifier-border);
+	border-left: 1px solid var(--bc-divider-color);
 	padding-left: var(--size-4-4);
 }
 
@@ -79,7 +85,7 @@
 	bottom: 0;
 	left: 50%;
 	width: 1px;
-	background: var(--background-modifier-border);
+	background: var(--bc-divider-color);
 }
 
 .bc-divider:hover::after,
@@ -178,7 +184,7 @@
 	.bc-columns-widget .bc-divider + .bc-column {
 		border-left: none;
 		padding-left: 0;
-		border-top: 1px solid var(--background-modifier-border);
+		border-top: 1px solid var(--bc-divider-color);
 		padding-top: var(--size-4-3);
 	}
 
