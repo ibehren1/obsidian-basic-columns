@@ -234,3 +234,28 @@ export function minimalChange(before: string, after: string) {
 		insert: after.slice(start, after.length - end),
 	};
 }
+
+/**
+ * The block that Backspace at `line`, `ch` would delete into from below, if
+ * any: the cursor is right after the block, on the blank line under it, or at
+ * the start of the text just past that blank line.
+ */
+export function blockBehindBackspace(
+	lines: string[],
+	line: number,
+	ch: number,
+): ColumnBlock | null {
+	const blocks = findColumnBlocks(lines);
+	const inside = blocks.find((b) => b.fromLine <= line && line <= b.toLine);
+	if (inside) {
+		return inside.toLine === line && ch === lines[line]!.length ? inside : null;
+	}
+	if (ch !== 0) return null;
+	const endingAt = (l: number) => blocks.find((b) => b.toLine === l) ?? null;
+	const above = endingAt(line - 1);
+	if (above) return above;
+	// Extra blank lines below the block still delete normally.
+	const blank = (l: number) => lines[l]!.trim() === '';
+	if (line >= 2 && blank(line - 1) && !blank(line)) return endingAt(line - 2);
+	return null;
+}

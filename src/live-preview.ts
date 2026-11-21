@@ -36,6 +36,7 @@ import {
 	serializeColumnBlock,
 	unwrapColumns,
 } from './model';
+import { blockBehindBackspace } from './model';
 import { applyWidths } from './reading';
 
 type BlockData = Pick<ColumnBlock, 'widths' | 'title' | 'columns'>;
@@ -526,7 +527,31 @@ function enterKeys(): KeyBinding[] {
 	return [
 		{ key: 'ArrowDown', run: (v) => enter(v, 'down') },
 		{ key: 'ArrowUp', run: (v) => enter(v, 'up') },
+		{ key: 'Backspace', run: backspaceIntoBlock },
 	];
+}
+
+/**
+ * Backspace just below a block would delete the whole block, since it is one
+ * unit in the note. Move into the end of its last column instead.
+ */
+function backspaceIntoBlock(view: EditorView): boolean {
+	const sel = view.state.selection.main;
+	if (!sel.empty) return false;
+	const doc = view.state.doc;
+	const line = doc.lineAt(sel.head);
+	const block = blockBehindBackspace(
+		doc.toString().split('\n'),
+		line.number - 1,
+		sel.head - line.from,
+	);
+	if (!block) return false;
+	return focusColumnAt(
+		view,
+		doc.line(block.fromLine + 1).from,
+		block.columns.length - 1,
+		'end',
+	);
 }
 
 /**
