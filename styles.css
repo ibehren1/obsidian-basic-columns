@@ -152,7 +152,8 @@
 }
 
 .bc-columns-widget:hover .bc-toolbar,
-.bc-columns-widget:focus-within .bc-toolbar {
+/* Phones have no hover, so show the toolbar while editing the columns. */
+.is-mobile .bc-columns-widget:focus-within .bc-toolbar {
 	opacity: 1;
 	pointer-events: auto;
 }
