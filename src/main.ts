@@ -1,6 +1,6 @@
 import { Plugin } from 'obsidian';
 import { registerCommands } from './commands';
-import { columnsEditorExtension } from './live-preview';
+import { DIVIDER_LABEL, columnsEditorExtension } from './live-preview';
 import { columnsPostProcessor } from './reading';
 import {
 	BasicColumnsSettingTab,
@@ -32,14 +32,19 @@ export default class BasicColumnsPlugin extends Plugin {
 
 		this.addSettingTab(new BasicColumnsSettingTab(this.app, this));
 		this.registerMarkdownPostProcessor(columnsPostProcessor);
-		this.registerEditorExtension(columnsEditorExtension(this.app));
+		this.registerEditorExtension(
+			columnsEditorExtension(this.app, {
+				resizable: () => this.settings.dividerResize,
+			}),
+		);
 		registerCommands(this);
 	}
 
 	onunload() {
-		this.documents.forEach((doc) =>
-			doc.body.setCssProps({ '--bc-divider-opacity': '' }),
-		);
+		this.documents.forEach((doc) => {
+			doc.body.setCssProps({ '--bc-divider-opacity': '' });
+			doc.body.removeClass('bc-no-resize');
+		});
 	}
 
 	async loadSettings() {
@@ -57,10 +62,16 @@ export default class BasicColumnsPlugin extends Plugin {
 	}
 
 	private applySettings() {
-		this.documents.forEach((doc) =>
+		const resizable = this.settings.dividerResize;
+		this.documents.forEach((doc) => {
 			doc.body.setCssProps({
 				'--bc-divider-opacity': String(this.settings.dividerOpacity),
-			}),
-		);
+			});
+			doc.body.toggleClass('bc-no-resize', !resizable);
+			doc.querySelectorAll('.bc-divider').forEach((divider) => {
+				if (resizable) divider.setAttr('aria-label', DIVIDER_LABEL);
+				else divider.removeAttribute('aria-label');
+			});
+		});
 	}
 }

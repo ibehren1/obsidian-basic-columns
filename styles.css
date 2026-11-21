@@ -95,6 +95,17 @@
 	background: var(--interactive-accent);
 }
 
+/* Resizing turned off in settings: the divider is just a line. */
+.bc-no-resize .bc-divider {
+	cursor: auto;
+}
+
+.bc-no-resize .bc-divider:hover::after {
+	width: 1px;
+	margin-left: 0;
+	background: var(--bc-divider-color);
+}
+
 /* Embedded editors: blend into the note instead of looking like a nested editor */
 
 .bc-column .markdown-source-view,
